@@ -22,7 +22,7 @@ jobs:
         run: flutter pub get
 
       - name: Build web
-        run: flutter build web --release --web-renderer canvaskit
+        run: flutter build web --release
 
       - name: Add _redirects
         run: echo "/* /index.html 200" > build/web/_redirects
