@@ -64,23 +64,4 @@ class CutOptimizerApp extends StatelessWidget {
       home: const HomeScreen(),
     );
   }
-}        fontFamily: 'monospace',
-        useMaterial3: true,
-        splashFactory: NoSplash.splashFactory,
-        snackBarTheme: const SnackBarThemeData(
-          backgroundColor: Color(0xFF111111),
-          contentTextStyle: TextStyle(
-            fontFamily: 'monospace',
-            color: Colors.white,
-            fontSize: 13,
-          ),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-          ),
-        ),
-      ),
-      home: const HomeScreen(),
-    );
-  }
 }
