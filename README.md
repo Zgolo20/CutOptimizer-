@@ -5,7 +5,7 @@ Runs on **Android, iOS, Web, Windows, macOS, Linux** from a single codebase.
 
 ---
 
-## 📁 Project Structure
+## 📁 Project Structure 
 
 ```
 cut_optimizer/
@@ -37,7 +37,7 @@ cut_optimizer/
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Prerequisites 
 ```bash
 flutter --version   # Requires Flutter 3.10+ / Dart 3.0+
 ```
@@ -74,7 +74,7 @@ flutter build appbundle --release
 # Output: build/app/outputs/bundle/release/app-release.aab
 ```
 
-### iOS (requires macOS)
+### iOS (requires macOS) 
 ```bash
 flutter build ios --release
 # Then open ios/Runner.xcworkspace in Xcode to archive
