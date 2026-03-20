@@ -18,7 +18,7 @@ dependencies:
   screenshot: ^2.1.0
   shared_preferences: ^2.2.2
   uuid: ^4.3.3
-  google_fonts: ^6.2.1
+  google_fonts: ^6.2.0
   cupertino_icons: ^1.0.6
   firebase_core: ^2.27.1
   firebase_auth: ^4.17.9
