@@ -59,39 +59,63 @@ class _MenuSheet extends StatelessWidget {
 
   void _showAuthSheet(BuildContext context, {required bool isSignUp}) {
     Navigator.pop(context);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (_) => _AuthSheet(isSignUp: isSignUp),
-    );
+    Future.delayed(const Duration(milliseconds: 300), () {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+        builder: (_) => _AuthSheet(isSignUp: isSignUp),
+      );
+    });
   }
 
   Future<void> _signOut(BuildContext context) async {
     Navigator.pop(context);
     await FirebaseAuth.instance.signOut();
-    if (context.mounted) _toast(context, 'Signed out successfully');
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Signed out successfully', style: TextStyle(fontFamily: 'monospace')),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Color(0xFF111111),
+      ));
+    }
   }
 
   void _toast(BuildContext context, String msg) {
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg, style: const TextStyle(fontFamily: 'monospace')), behavior: SnackBarBehavior.floating, backgroundColor: const Color(0xFF111111), duration: const Duration(seconds: 2)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg, style: const TextStyle(fontFamily: 'monospace')),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: const Color(0xFF111111),
+      duration: const Duration(seconds: 2),
+    ));
   }
 
   void _newProject(BuildContext context) {
     Navigator.pop(context);
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('New Project', style: TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w700)),
-        content: const Text('Unsaved changes will be lost.', style: TextStyle(fontFamily: 'monospace')),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: Color(0xFF888888), fontFamily: 'monospace'))),
-          TextButton(onPressed: () { Navigator.pop(context); context.read<AppState>().newProject(); }, child: const Text('Start New', style: TextStyle(color: Color(0xFF111111), fontFamily: 'monospace', fontWeight: FontWeight.w700))),
-        ],
-      ),
-    );
+    Future.delayed(const Duration(milliseconds: 300), () {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('New Project', style: TextStyle(fontFamily: 'monospace', fontWeight: FontWeight.w700)),
+          content: const Text('Unsaved changes will be lost.', style: TextStyle(fontFamily: 'monospace')),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel', style: TextStyle(color: Color(0xFF888888), fontFamily: 'monospace')),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                context.read<AppState>().newProject();
+              },
+              child: const Text('Start New', style: TextStyle(color: Color(0xFF111111), fontFamily: 'monospace', fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   Future<void> _saveProject(BuildContext context) async {
@@ -102,26 +126,51 @@ class _MenuSheet extends StatelessWidget {
       final dir = await getApplicationDocumentsDirectory();
       final file = File('${dir.path}/cut_project.json');
       await file.writeAsString(json);
-      if (context.mounted) _toast(context, 'Project saved!');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Project saved!', style: TextStyle(fontFamily: 'monospace')),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Color(0xFF111111),
+        ));
+      }
     } catch (e) {
-      if (context.mounted) _toast(context, 'Save failed: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Save failed: $e', style: const TextStyle(fontFamily: 'monospace')),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color(0xFF111111),
+        ));
+      }
     }
   }
 
   Future<void> _loadProject(BuildContext context) async {
     Navigator.pop(context);
     try {
-      final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['json']);
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
       if (result != null && result.files.single.path != null) {
         final content = await File(result.files.single.path!).readAsString();
         final json = jsonDecode(content) as Map<String, dynamic>;
         if (context.mounted) {
           context.read<AppState>().loadFromProjectJson(json);
-          if (context.mounted) _toast(context, 'Project loaded!');
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Project loaded!', style: TextStyle(fontFamily: 'monospace')),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Color(0xFF111111),
+          ));
         }
       }
     } catch (e) {
-      if (context.mounted) _toast(context, 'Load failed: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Load failed: $e', style: const TextStyle(fontFamily: 'monospace')),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: const Color(0xFF111111),
+        ));
+      }
     }
   }
 }
@@ -161,7 +210,7 @@ class _AuthSheetState extends State<_AuthSheet> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(widget.isSignUp ? 'Account created!' : 'Welcome back!',
-            style: const TextStyle(fontFamily: 'monospace')),
+              style: const TextStyle(fontFamily: 'monospace')),
           backgroundColor: const Color(0xFF111111),
           behavior: SnackBarBehavior.floating,
         ));
@@ -178,7 +227,7 @@ class _AuthSheetState extends State<_AuthSheet> {
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         Center(child: Container(width: 40, height: 4, margin: const EdgeInsets.only(bottom: 20), decoration: BoxDecoration(color: const Color(0xFFDEDEDE), borderRadius: BorderRadius.circular(2)))),
         Text(widget.isSignUp ? 'Create Account' : 'Sign In',
-          style: const TextStyle(fontFamily: 'monospace', fontSize: 17, fontWeight: FontWeight.w700)),
+            style: const TextStyle(fontFamily: 'monospace', fontSize: 17, fontWeight: FontWeight.w700)),
         const SizedBox(height: 20),
         TextField(
           controller: _emailCtrl,
@@ -214,7 +263,13 @@ class _AuthSheetState extends State<_AuthSheet> {
         const SizedBox(height: 16),
         ElevatedButton(
           onPressed: _loading ? null : _submit,
-          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF111111), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), elevation: 0),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF111111),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            elevation: 0,
+          ),
           child: _loading
             ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
             : Text(widget.isSignUp ? 'Create Account' : 'Sign In',
