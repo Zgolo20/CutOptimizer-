@@ -18,8 +18,10 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Get dependencies
-        run: flutter pub get
+      - name: Enable web & get dependencies
+        run: |
+          flutter create . --platforms=web
+          flutter pub get
 
       - name: Build web
         run: flutter build web --release
