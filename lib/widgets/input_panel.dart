@@ -228,7 +228,7 @@ class _OptimizeSection extends StatelessWidget {
         
         child: state.isOptimizing
           ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-          : const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          : Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
               Icon(Icons.content_cut, size: 18, color: Colors.white),
               SizedBox(width: 8),
               Text('OPTIMIZE CUTS', style: TextStyle(fontFamily: 'monospace', fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1)),
