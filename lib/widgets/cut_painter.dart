@@ -1,3 +1,4 @@
+
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/models.dart';
@@ -28,23 +29,16 @@ class CutSheetPainter extends CustomPainter {
 
     final sheetRect = Rect.fromLTWH(offX, offY, drawW, drawH);
 
-    // Sheet background
     canvas.drawRect(sheetRect, Paint()..color = Colors.white);
-
-    // Hatch for waste
     _drawHatch(canvas, sheetRect);
-
-    // Sheet border
     canvas.drawRect(sheetRect, Paint()
       ..color = const Color(0xFFAAAAAA)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5);
 
-    // Sheet size label
     _drawText(canvas, '${_fmt(sheet.sheetLength)} × ${_fmt(sheet.sheetWidth)} ${_unitName()}',
       Offset(offX, offY - 20), fontSize: 11, color: const Color(0xFF666666));
 
-    // Placements
     for (int i = 0; i < sheet.placements.length; i++) {
       final p = sheet.placements[i];
       double px = p.x, py = p.y, pw = p.w, ph = p.h;
@@ -53,30 +47,26 @@ class CutSheetPainter extends CustomPainter {
         final tw = pw; pw = ph; ph = tw;
       }
 
-      // Scale correctly
-      final rx = offX + (px / sheetW) * drawW;
-      final ry = offY + (py / sheetH) * drawH;
-      final rw = (pw / sheetW) * drawW;
-      final rh = (ph / sheetH) * drawH;
+      final rx = offX + px * s;
+      final ry = offY + py * s;
+      final rw = pw * s;
+      final rh = ph * s;
 
       final fillColor = showColors
         ? (i < _colors.length ? _colors[i % _colors.length] : Colors.blue).withOpacity(0.82)
         : const Color(0xFFDDDDDD);
       final textColor = showColors ? Colors.black87 : const Color(0xFF333333);
 
-      // Fill
       canvas.drawRRect(
         RRect.fromRectAndRadius(Rect.fromLTWH(rx, ry, rw, rh), const Radius.circular(3)),
         Paint()..color = fillColor,
       );
 
-      // Border
       canvas.drawRRect(
         RRect.fromRectAndRadius(Rect.fromLTWH(rx, ry, rw, rh), const Radius.circular(3)),
         Paint()..color = Colors.white..style = PaintingStyle.stroke..strokeWidth = 1.5,
       );
 
-      // Label
       if (showMeasurements && rw > 30 && rh > 16) {
         final lbl = '${_fmt(p.origL)}×${_fmt(p.origW)}${p.rotated ? " ↻" : ""}';
         final fs = min(fontSize, min(rw / max(lbl.length, 1) * 1.5, rh * 0.4)).clamp(7.0, 20.0);
