@@ -292,21 +292,22 @@ class _MenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          child: Row(children: [
-            Icon(icon, size: 20, color: const Color(0xFF555555)),
-            const SizedBox(width: 14),
-            Text(label, style: const TextStyle(
-                fontFamily: 'monospace', fontSize: 13,
-                color: Color(0xFF333333))),
-          ]),
+    return SizedBox(
+      width: double.infinity,
+      child: TextButton(
+        onPressed: onTap,
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          alignment: Alignment.centerLeft,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
+        child: Row(children: [
+          Icon(icon, size: 20, color: const Color(0xFF555555)),
+          const SizedBox(width: 14),
+          Text(label, style: const TextStyle(
+              fontFamily: 'monospace', fontSize: 13,
+              color: Color(0xFF333333))),
+        ]),
       ),
     );
   }
