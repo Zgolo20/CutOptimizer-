@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CutOptimizer Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+  const app = initializeApp({
+    apiKey: "AIzaSyA_u9GywGo-BgL4AqxaoImxdhszW6LwRhE",
+    authDomain: "cutoptimizer-99ff9.firebaseapp.com",
+    projectId: "cutoptimizer-99ff9",
+    storageBucket: "cutoptimizer-99ff9.firebasestorage.app",
+    messagingSenderId: "128095288563",
+    appId: "1:128095288563:web:3ea28229e0ab5760fa8b86"
+  });
+  const auth = getAuth(app);
+
+  window._auth = auth;
+  window._signUp = (email, pass) => createUserWithEmailAndPassword(auth, email, pass);
+  window._signIn = (email, pass) => signInWithEmailAndPassword(auth, email, pass);
+  window._signOut = () => signOut(auth);
+  window._onAuth = (cb) => onAuthStateChanged(auth, cb);
+</script>
+<style>
+:root {
+  --bg: #f5f5f5;
+  --surface: #ffffff;
+  --surface2: #f0f0f0;
+  --surface3: #e8e8e8;
+  --border: #dedede;
+  --accent: #111111;
+  --accent2: #444444;
+  --text: #111111;
+  --text2: #555555;
+  --text3: #aaaaaa;
+  --danger: #e03535;
+  --radius: 8px;
+  --font-mono: 'DM Mono', monospace;
+  --font-display: 'Syne', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-mono); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+/* TOPBAR */
+.topbar { display:flex; align-items:center; justify-content:space-between; padding:0 16px; height:52px; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; }
+.logo { font-family:var(--font-display); font-weight:800; font-size:18px; letter-spacing:-0.5px; }
+.logo span { color: var(--accent2); }
+.topbar-icons { display:flex; align-items:center; gap:4px; }
+.icon-btn { background:none; border:none; cursor:pointer; color:var(--text2); padding:8px; border-radius:var(--radius); font-size:18px; line-height:1; transition:all .15s; display:flex; align-items:center; justify-content:center; }
+.icon-btn:hover { background:var(--surface2); color:var(--text); }
+
+/* LAYOUT */
+.layout { display:grid; grid-template-columns:320px 1fr; height:calc(100vh - 52px); overflow:hidden; }
+@media(max-width:768px) { .layout { grid-template-columns:1fr; grid-template-rows:auto 1fr; height:calc(100vh - 52px); overflow:hidden; } }
+
+/* LEFT PANEL */
+.left-panel { background:var(--surface); border-right:1px solid var(--border); overflow-y:auto; display:flex; flex-direction:column; }
+@media(max-width:768px) { .left-panel { max-height:58vh; overflow-y:auto; flex-shrink:0; } }
+
+.section { border-bottom:1px solid var(--border); }
+.section-header { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; cursor:pointer; user-select:none; background:var(--surface2); font-family:var(--font-display); font-weight:600; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text2); transition:background .15s; }
+.section-header:hover { background:var(--surface3); }
+.section-header .chevron { transition:transform .2s; font-size:14px; }
+.section-header.collapsed .chevron { transform:rotate(-90deg); }
+.section-body { padding:12px 16px; }
+.section-body.collapsed { display:none; }
+
+/* TABLE */
+.input-table { width:100%; border-collapse:collapse; }
+.input-table th { font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text3); padding:4px 6px; text-align:left; font-weight:500; }
+.input-table td { padding:3px 4px; }
+.tbl-input { width:100%; background:var(--surface3); border:1px solid var(--border); color:var(--text); font-family:var(--font-mono); font-size:13px; padding:5px 8px; border-radius:5px; outline:none; transition:border-color .15s; }
+.tbl-input:focus { border-color:var(--accent); }
+.tbl-input::placeholder { color:var(--text3); }
+.row-delete { background:none; border:none; cursor:pointer; color:var(--text3); font-size:16px; padding:4px 6px; border-radius:4px; transition:all .15s; }
+.row-delete:hover { color:var(--danger); }
+.add-row-btn { margin-top:10px; width:100%; background:none; border:1px dashed var(--border); color:var(--text3); font-family:var(--font-mono); font-size:12px; padding:7px; border-radius:var(--radius); cursor:pointer; transition:all .15s; }
+.add-row-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+/* OPTIMIZE */
+.optimize-wrap { padding:16px; }
+.optimize-btn { width:100%; padding:13px; background:var(--accent); color:#fff; font-family:var(--font-display); font-weight:700; font-size:14px; letter-spacing:1px; text-transform:uppercase; border:none; border-radius:var(--radius); cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.optimize-btn:hover { opacity:.9; transform:translateY(-1px); }
+.optimize-btn:active { transform:translateY(0); }
+.algo-toggle { display:flex; gap:6px; margin-top:10px; }
+.algo-btn { flex:1; padding:7px 6px; font-family:var(--font-mono); font-size:11px; background:var(--surface2); border:1px solid var(--border); color:var(--text2); border-radius:5px; cursor:pointer; transition:all .15s; text-align:center; }
+.algo-btn.active { background:var(--surface3); border-color:var(--accent2); color:var(--accent2); }
+
+/* STATS */
+.stats-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; padding:12px 16px; border-top:1px solid var(--border); }
+.stat-box { background:var(--surface2); border-radius:var(--radius); padding:10px; text-align:center; }
+.stat-val { font-family:var(--font-display); font-size:18px; font-weight:700; color:var(--accent); }
+.stat-label { font-size:10px; color:var(--text3); letter-spacing:0.5px; margin-top:2px; }
+
+/* RIGHT PANEL */
+.right-panel { display:flex; flex-direction:column; background:var(--bg); overflow:hidden; min-height:0; }
+@media(max-width:768px) { .right-panel { flex:1; min-height:0; } }
+
+.toolbar { display:flex; align-items:center; gap:4px; padding:8px 12px; background:var(--surface); border-bottom:1px solid var(--border); overflow-x:auto; flex-shrink:0; }
+.toolbar-sep { width:1px; height:24px; background:var(--border); margin:0 4px; flex-shrink:0; }
+.tool-btn { background:none; border:1px solid transparent; color:var(--text2); padding:6px 8px; border-radius:5px; cursor:pointer; font-size:15px; transition:all .15s; display:flex; align-items:center; gap:5px; white-space:nowrap; flex-shrink:0; }
+.tool-btn:hover { background:var(--surface2); color:var(--text); }
+.tool-btn.active { background:var(--surface2); border-color:var(--border); color:var(--accent); }
+.tool-label { font-family:var(--font-mono); font-size:11px; }
+
+.canvas-wrap { flex:1; min-height:0; overflow:auto; display:flex; align-items:flex-start; justify-content:flex-start; padding:16px; background:var(--bg); }
+.canvas-inner { position:relative; width:100%; }
+svg#cutSvg { display:block; border-radius:4px; }
+
+.empty-state { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; color:var(--text3); text-align:center; padding:40px; min-height:300px; }
+.empty-icon { font-size:56px; opacity:.3; }
+.empty-title { font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--text2); }
+.empty-sub { font-size:13px; max-width:280px; line-height:1.6; }
+
+/* SHEET TABS */
+.sheet-tabs { display:flex; gap:4px; padding:8px 16px 0; border-bottom:1px solid var(--border); background:var(--surface); overflow-x:auto; }
+.sheet-tab { padding:6px 14px; font-size:12px; font-family:var(--font-mono); border:1px solid var(--border); border-bottom:none; border-radius:5px 5px 0 0; cursor:pointer; background:var(--surface2); color:var(--text3); transition:all .15s; white-space:nowrap; }
+.sheet-tab.active { background:var(--bg); color:var(--text); }
+
+/* MODALS */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:500; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; min-width:300px; max-width:440px; width:92%; max-height:88vh; overflow-y:auto; animation:modalIn .2s ease; }
+@keyframes modalIn { from{opacity:0;transform:scale(.95) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+.modal-title { font-family:var(--font-display); font-size:16px; font-weight:700; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; }
+.modal-close { background:none; border:none; color:var(--text3); cursor:pointer; font-size:20px; }
+.modal-close:hover { color:var(--text); }
+.setting-group { margin-bottom:20px; }
+.setting-label { font-size:10px; letter-spacing:1.2px; text-transform:uppercase; color:var(--text3); margin-bottom:8px; display:block; }
+.setting-options { display:flex; flex-wrap:wrap; gap:6px; }
+.setting-opt { padding:6px 12px; border:1px solid var(--border); border-radius:5px; background:var(--surface2); color:var(--text2); font-family:var(--font-mono); font-size:12px; cursor:pointer; transition:all .15s; }
+.setting-opt:hover, .setting-opt.active { border-color:var(--accent); color:var(--accent); }
+.setting-input { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--font-mono); font-size:13px; padding:8px 10px; border-radius:5px; outline:none; }
+.setting-input:focus { border-color:var(--accent); }
+
+/* MENU */
+.menu-item { display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:var(--radius); cursor:pointer; color:var(--text2); transition:all .15s; font-size:13px; border:none; background:none; width:100%; text-align:left; font-family:var(--font-mono); }
+.menu-item:hover { background:var(--surface2); color:var(--text); }
+.mi-icon { font-size:17px; width:22px; text-align:center; }
+.menu-sep { height:1px; background:var(--border); margin:8px 0; }
+
+/* AUTH MODAL */
+.auth-field { width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); font-family:var(--font-mono); font-size:13px; padding:10px 12px; border-radius:8px; outline:none; margin-bottom:10px; }
+.auth-field:focus { border-color:var(--accent); }
+.auth-btn { width:100%; padding:13px; background:var(--accent); color:#fff; font-family:var(--font-display); font-weight:700; font-size:14px; border:none; border-radius:8px; cursor:pointer; transition:all .15s; margin-top:4px; }
+.auth-btn:hover { opacity:.9; }
+.auth-err { color:var(--danger); font-size:12px; margin-bottom:8px; display:none; }
+.auth-switch { font-size:12px; color:var(--text3); text-align:center; margin-top:14px; }
+.auth-switch a { color:var(--accent); cursor:pointer; text-decoration:underline; }
+.auth-user { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--surface2); border-radius:8px; margin-bottom:12px; }
+.auth-user-email { font-size:13px; color:var(--text); flex:1; overflow:hidden; text-overflow:ellipsis; }
+
+/* TOAST */
+.toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--accent); color:#fff; padding:10px 20px; border-radius:20px; font-size:13px; z-index:999; opacity:0; transition:opacity .3s; pointer-events:none; white-space:nowrap; }
+.toast.show { opacity:1; }
+
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">✦ Cut<span>Optimizer</span></div>
+  <div class="topbar-icons">
+    <button class="icon-btn" id="settingsBtn" title="Settings">⚙</button>
+    <button class="icon-btn" id="menuBtn" title="Menu">⋯</button>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+
+    <div class="section">
+      <div class="section-header" id="panelsHeader">
+        <span>Panels to Cut</span><span class="chevron">▾</span>
+      </div>
+      <div class="section-body" id="panelsBody">
+        <table class="input-table">
+          <thead><tr><th>Length</th><th>Width</th><th>Qty</th><th></th></tr></thead>
+          <tbody id="panelsTbody"></tbody>
+        </table>
+        <button class="add-row-btn" id="addPanelBtn">+ Add Panel</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header" id="stockHeader">
+        <span>Stock Sheet</span><span class="chevron">▾</span>
+      </div>
+      <div class="section-body" id="stockBody">
+        <table class="input-table">
+          <thead><tr><th>Length</th><th>Width</th><th>Qty</th><th></th></tr></thead>
+          <tbody id="stockTbody"></tbody>
+        </table>
+        <button class="add-row-btn" id="addStockBtn">+ Add Stock Sheet</button>
+      </div>
+    </div>
+
+    <div class="optimize-wrap">
+      <div class="algo-toggle">
+        <button class="algo-btn active" id="algoWaste" onclick="setAlgo('waste')">◈ Least Waste</button>
+        <button class="algo-btn" id="algoCuts" onclick="setAlgo('cuts')">✂ Least Cuts</button>
+      </div>
+      <button class="optimize-btn" id="optimizeBtn" onclick="runOptimize()" style="margin-top:10px">
+        ✂ OPTIMIZE CUTS
+      </button>
+    </div>
+
+    <div class="stats-row" id="statsRow" style="display:none">
+      <div class="stat-box"><div class="stat-val" id="statEfficiency">—</div><div class="stat-label">Efficiency</div></div>
+      <div class="stat-box"><div class="stat-val" id="statWaste">—</div><div class="stat-label">Waste</div></div>
+      <div class="stat-box"><div class="stat-val" id="statSheets">—</div><div class="stat-label">Sheets</div></div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="toolbar">
+      <button class="tool-btn" onclick="zoom(1.25)" title="Zoom In">🔍<span class="tool-label">+</span></button>
+      <button class="tool-btn" onclick="zoom(0.8)" title="Zoom Out">🔍<span class="tool-label">−</span></button>
+      <button class="tool-btn" onclick="zoom(1,'fit')" title="Fit">⊡</button>
+      <div class="toolbar-sep"></div>
+      <button class="tool-btn" id="rotateBtn" onclick="toggleRotate()" title="Rotate">⟳</button>
+      <div class="toolbar-sep"></div>
+      <button class="tool-btn" onclick="changeFontSize(2)" title="Increase font">A+</button>
+      <button class="tool-btn" onclick="changeFontSize(-2)" title="Decrease font">A−</button>
+      <div class="toolbar-sep"></div>
+      <button class="tool-btn" id="colorBtn" onclick="toggleColor()" title="Toggle Color" class="active">🎨</button>
+      <button class="tool-btn" id="measureBtn" onclick="toggleMeasurements()" title="Measurements">📐</button>
+      <div class="toolbar-sep"></div>
+      <button class="tool-btn" onclick="exportSVGtoPNG()" title="Export PNG">⬇ PNG</button>
+      <button class="tool-btn" onclick="exportPDF()" title="Export PDF">⬇ PDF</button>
+    </div>
+
+    <div class="sheet-tabs" id="sheetTabs" style="display:none"></div>
+
+    <div class="canvas-wrap" id="canvasWrap">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">✦</div>
+        <div class="empty-title">Ready to Optimize</div>
+        <div class="empty-sub">Add panel dimensions and stock sheet sizes, then tap Optimize Cuts.</div>
+      </div>
+      <div class="canvas-inner" id="canvasInner" style="display:none">
+        <svg id="cutSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-title">Settings <button class="modal-close" onclick="closeModal('settingsModal')">✕</button></div>
+    <div class="setting-group">
+      <span class="setting-label">Language</span>
+      <div class="setting-options">
+        <button class="setting-opt active" onclick="setSetting(this,'lang')">English</button>
+        <button class="setting-opt" onclick="setSetting(this,'lang')">Español</button>
+        <button class="setting-opt" onclick="setSetting(this,'lang')">Français</button>
+        <button class="setting-opt" onclick="setSetting(this,'lang')">Deutsch</button>
+        <button class="setting-opt" onclick="setSetting(this,'lang')">العربية</button>
+        <button class="setting-opt" onclick="setSetting(this,'lang')">中文</button>
+      </div>
+    </div>
+    <div class="setting-group">
+      <span class="setting-label">Units</span>
+      <div class="setting-options">
+        <button class="setting-opt active" id="unitMm" onclick="setUnit(this,'mm')">mm</button>
+        <button class="setting-opt" id="unitCm" onclick="setUnit(this,'cm')">cm</button>
+        <button class="setting-opt" id="unitM" onclick="setUnit(this,'m')">m</button>
+        <button class="setting-opt" id="unitIn" onclick="setUnit(this,'in')">"</button>
+      </div>
+    </div>
+    <div class="setting-group">
+      <span class="setting-label">Cut Orientation</span>
+      <div class="setting-options">
+        <button class="setting-opt active" onclick="setSetting(this,'orient')">Optimal</button>
+        <button class="setting-opt" onclick="setSetting(this,'orient')">Width Cuts</button>
+        <button class="setting-opt" onclick="setSetting(this,'orient')">Length Cuts</button>
+      </div>
+    </div>
+    <div class="setting-group">
+      <span class="setting-label">Blade Thickness (kerf)</span>
+      <input class="setting-input" type="number" id="kerfInput" value="3" min="0" max="20" step="0.5"/>
+    </div>
+    <div class="setting-group">
+      <span class="setting-label">Edge Banding Thickness</span>
+      <input class="setting-input" type="number" id="edgeBandInput" value="0" min="0" max="5" step="0.1"/>
+    </div>
+    <div class="setting-group">
+      <span class="setting-label">Available Sheets Limit</span>
+      <input class="setting-input" type="number" id="sheetsLimitInput" value="999" min="1"/>
+    </div>
+  </div>
+</div>
+
+<!-- MENU MODAL -->
+<div class="modal-overlay" id="menuModal">
+  <div class="modal" style="min-width:260px">
+    <div class="modal-title">Menu <button class="modal-close" onclick="closeModal('menuModal')">✕</button></div>
+
+    <!-- Auth section - shown based on login state -->
+    <div id="authLoggedOut">
+      <button class="menu-item" onclick="openAuthModal('signup')"><span class="mi-icon">👤</span> Sign Up</button>
+      <button class="menu-item" onclick="openAuthModal('signin')"><span class="mi-icon">🔑</span> Sign In</button>
+    </div>
+    <div id="authLoggedIn" style="display:none">
+      <div class="auth-user">
+        <span class="mi-icon">👤</span>
+        <span class="auth-user-email" id="userEmailDisplay"></span>
+      </div>
+      <button class="menu-item" onclick="handleSignOut()"><span class="mi-icon">🚪</span> Sign Out</button>
+    </div>
+
+    <div class="menu-sep"></div>
+    <button class="menu-item" onclick="newProject()"><span class="mi-icon">📄</span> New Project</button>
+    <button class="menu-item" onclick="saveProject()"><span class="mi-icon">💾</span> Save Project</button>
+    <button class="menu-item" onclick="loadProject()"><span class="mi-icon">📂</span> Load Project</button>
+    <div class="menu-sep"></div>
+    <button class="menu-item" onclick="exportPDF()"><span class="mi-icon">📑</span> Export to PDF</button>
+    <button class="menu-item" onclick="exportSVGtoPNG()"><span class="mi-icon">🖼</span> Export Image</button>
+    <div class="menu-sep"></div>
+    <button class="menu-item"><span class="mi-icon">✉</span> Contact / Support</button>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title" id="authModalTitle">Sign In <button class="modal-close" onclick="closeModal('authModal')">✕</button></div>
+    <div class="auth-err" id="authErr"></div>
+    <input class="auth-field" type="email" id="authEmail" placeholder="Email address" autocomplete="email"/>
+    <input class="auth-field" type="password" id="authPass" placeholder="Password" autocomplete="current-password"/>
+    <button class="auth-btn" id="authSubmitBtn" onclick="handleAuthSubmit()">Sign In</button>
+    <div class="auth-switch" id="authSwitch">
+      Don't have an account? <a onclick="switchAuthMode()">Sign Up</a>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+<input type="file" id="fileInput" accept=".json" style="display:none"/>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────
+const state = {
+  panels: [{l:600,w:400,qty:2},{l:900,w:200,qty:3},{l:300,w:300,qty:4}],
+  stocks: [{l:2440,w:1220,qty:2}],
+  unit: 'mm', kerf: 3, edgeBand: 0,
+  algo: 'waste', orient: 'optimal',
+  colorMode: true, showMeasure: true,
+  rotated: false, scale: 1, fontSize: 13,
+  results: null, currentSheet: 0,
+};
+
+const COLORS = [
+  '#E8534A','#4A90E8','#4CAF50','#F5A623','#9B59B6',
+  '#1ABC9C','#E91E63','#3F51B5','#FF9800','#00BCD4',
+  '#8BC34A','#FF5722','#607D8B','#795548','#673AB7',
+  '#009688','#C0392B','#2980B9','#27AE60','#D35400',
+];
+
+// ─── INIT ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderTable('panels');
+  renderTable('stocks');
+  setupCollapse('panelsHeader','panelsBody');
+  setupCollapse('stockHeader','stockBody');
+  document.getElementById('addPanelBtn').onclick = () => { state.panels.push({l:'',w:'',qty:1}); renderTable('panels'); };
+  document.getElementById('addStockBtn').onclick = () => { state.stocks.push({l:'',w:'',qty:1}); renderTable('stocks'); };
+  document.getElementById('settingsBtn').onclick = () => openModal('settingsModal');
+  document.getElementById('menuBtn').onclick = () => openModal('menuModal');
+  document.getElementById('fileInput').onchange = handleFileLoad;
+  document.getElementById('colorBtn').classList.add('active');
+  document.getElementById('measureBtn').classList.add('active');
+
+  // Firebase auth state
+  setTimeout(() => {
+    if (window._onAuth) {
+      window._onAuth(user => {
+        const out = document.getElementById('authLoggedOut');
+        const inn = document.getElementById('authLoggedIn');
+        const emailEl = document.getElementById('userEmailDisplay');
+        if (user) {
+          out.style.display = 'none';
+          inn.style.display = 'block';
+          emailEl.textContent = user.email;
+        } else {
+          out.style.display = 'block';
+          inn.style.display = 'none';
+        }
+      });
+    }
+  }, 500);
+});
+
+// ─── TABLE RENDER ─────────────────────────────────────────────────
+function renderTable(type) {
+  const arr = type === 'panels' ? state.panels : state.stocks;
+  const tbody = document.getElementById(type === 'panels' ? 'panelsTbody' : 'stockTbody');
+  tbody.innerHTML = '';
+  arr.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="tbl-input" type="number" value="${row.l||''}" placeholder="L" min="1" oninput="updateRow('${type}',${i},'l',this.value)"/></td>
+      <td><input class="tbl-input" type="number" value="${row.w||''}" placeholder="W" min="1" oninput="updateRow('${type}',${i},'w',this.value)"/></td>
+      <td><input class="tbl-input" type="number" value="${row.qty||1}" placeholder="Qty" min="1" style="width:52px" oninput="updateRow('${type}',${i},'qty',this.value)"/></td>
+      <td><button class="row-delete" onclick="deleteRow('${type}',${i})">✕</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+function updateRow(type,i,field,val) {
+  const arr = type==='panels'?state.panels:state.stocks;
+  arr[i][field] = parseFloat(val)||val;
+}
+function deleteRow(type,i) {
+  const arr = type==='panels'?state.panels:state.stocks;
+  arr.splice(i,1); renderTable(type);
+}
+
+// ─── COLLAPSE ─────────────────────────────────────────────────────
+function setupCollapse(hId, bId) {
+  const hdr = document.getElementById(hId);
+  const body = document.getElementById(bId);
+  hdr.onclick = () => {
+    hdr.classList.toggle('collapsed');
+    body.classList.toggle('collapsed');
+    setTimeout(() => renderSVG(), 60);
+  };
+}
+
+// ─── SETTINGS ─────────────────────────────────────────────────────
+function setSetting(btn, group) {
+  btn.closest('.setting-options').querySelectorAll('.setting-opt').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function setUnit(btn, unit) { state.unit = unit; setSetting(btn,'unit'); if(state.results) renderSVG(); }
+function setAlgo(algo) {
+  state.algo = algo;
+  document.getElementById('algoWaste').classList.toggle('active', algo==='waste');
+  document.getElementById('algoCuts').classList.toggle('active', algo==='cuts');
+}
+
+// ─── MODALS ───────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) e.target.classList.remove('open');
+});
+
+// ─── AUTH ─────────────────────────────────────────────────────────
+let authMode = 'signin';
+function openAuthModal(mode) {
+  closeModal('menuModal');
+  authMode = mode;
+  const isSignup = mode === 'signup';
+  document.getElementById('authModalTitle').childNodes[0].textContent = isSignup ? 'Create Account ' : 'Sign In ';
+  document.getElementById('authSubmitBtn').textContent = isSignup ? 'Create Account' : 'Sign In';
+  document.getElementById('authSwitch').innerHTML = isSignup
+    ? `Already have an account? <a onclick="switchAuthMode()">Sign In</a>`
+    : `Don't have an account? <a onclick="switchAuthMode()">Sign Up</a>`;
+  document.getElementById('authErr').style.display = 'none';
+  document.getElementById('authEmail').value = '';
+  document.getElementById('authPass').value = '';
+  openModal('authModal');
+}
+function switchAuthMode() { openAuthModal(authMode==='signin'?'signup':'signin'); }
+async function handleAuthSubmit() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPass').value.trim();
+  const errEl = document.getElementById('authErr');
+  if (!email || !pass) { errEl.textContent='Please enter email and password'; errEl.style.display='block'; return; }
+  const btn = document.getElementById('authSubmitBtn');
+  btn.textContent = '...'; btn.disabled = true;
+  try {
+    if (authMode === 'signup') {
+      await window._signUp(email, pass);
+      toast('Account created! Welcome 🎉');
+    } else {
+      await window._signIn(email, pass);
+      toast('Welcome back!');
+    }
+    closeModal('authModal');
+  } catch(e) {
+    errEl.textContent = e.message || 'Authentication failed';
+    errEl.style.display = 'block';
+  } finally {
+    btn.textContent = authMode==='signup'?'Create Account':'Sign In';
+    btn.disabled = false;
+  }
+}
+async function handleSignOut() {
+  closeModal('menuModal');
+  await window._signOut();
+  toast('Signed out');
+}
+
+// ─── OPTIMIZER ────────────────────────────────────────────────────
+function runOptimize() {
+  const kerf = parseFloat(document.getElementById('kerfInput').value)||0;
+  const edgeBand = parseFloat(document.getElementById('edgeBandInput').value)||0;
+  const sheetsLimit = parseInt(document.getElementById('sheetsLimitInput').value)||999;
+
+  // Collect panels
+  const panels = [];
+  for (const p of state.panels) {
+    if (!p.l||!p.w||!p.qty) continue;
+    const qty = parseInt(p.qty)||1;
+    for (let i=0;i<qty;i++) panels.push({l:parseFloat(p.l)+edgeBand*2, w:parseFloat(p.w)+edgeBand*2, origL:parseFloat(p.l), origW:parseFloat(p.w)});
+  }
+  if (!panels.length) { toast('Add at least one panel.'); return; }
+
+  const stockDefs = state.stocks.filter(s=>s.l&&s.w&&s.qty);
+  if (!stockDefs.length) { toast('Add at least one stock sheet.'); return; }
+
+  // Sort panels
+  if (state.algo==='waste') {
+    panels.sort((a,b)=>(b.l*b.w)-(a.l*a.w));
+  } else {
+    panels.sort((a,b)=>Math.max(b.l,b.w)-Math.max(a.l,a.w));
+  }
+
+  // Expand stocks
+  let allSheets = [];
+  for (const s of stockDefs) {
+    for (let i=0;i<parseInt(s.qty)&&allSheets.length<sheetsLimit;i++) {
+      allSheets.push({L:parseFloat(s.l), W:parseFloat(s.w), placements:[], free:[{x:0,y:0,w:parseFloat(s.w),h:parseFloat(s.l)}]});
+    }
+  }
+
+  // Guillotine pack
+  const remaining = [...panels];
+  let colorIdx = 0;
+
+  for (const sheet of allSheets) {
+    if (!remaining.length) break;
+    let placed = true;
+    while (placed && remaining.length) {
+      placed = false;
+      for (let pi=0;pi<remaining.length;pi++) {
+        const panel = remaining[pi];
+        const fit = bestFit(sheet.free, panel.l, panel.w, kerf, state.algo);
+        if (fit) {
+          const {rect, rotated} = fit;
+          const pw = rotated ? panel.l : panel.w;
+          const ph = rotated ? panel.w : panel.l;
+          sheet.placements.push({
+            x:rect.x, y:rect.y, w:pw, h:ph,
+            origL:panel.origL, origW:panel.origW,
+            rotated, color:COLORS[colorIdx%COLORS.length]
+          });
+          splitRect(sheet.free, rect, pw+kerf, ph+kerf);
+          remaining.splice(pi,1);
+          colorIdx++;
+          placed = true;
+          break;
+        }
+      }
+    }
+  }
+
+  // Stats
+  const usedSheets = allSheets.filter(s=>s.placements.length);
+  let totalPanel = 0, totalSheet = 0;
+  for (const s of usedSheets) {
+    for (const p of s.placements) totalPanel += p.w*p.h;
+    totalSheet += s.L*s.W;
+  }
+  const eff = totalSheet ? (totalPanel/totalSheet*100).toFixed(1) : 0;
+  const waste = (totalSheet-totalPanel).toFixed(0);
+
+  document.getElementById('statEfficiency').textContent = eff+'%';
+  document.getElementById('statWaste').textContent = formatArea(parseFloat(waste));
+  document.getElementById('statSheets').textContent = usedSheets.length;
+  document.getElementById('statsRow').style.display = 'grid';
+
+  if (remaining.length) toast(`⚠ ${remaining.length} panel(s) couldn't fit.`);
+
+  state.results = usedSheets;
+  state.currentSheet = 0;
+  renderSheetTabs();
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('canvasInner').style.display = 'block';
+  renderSVG();
+}
+
+function bestFit(free, pl, pw, kerf, algo) {
+  let best=null, bestScore=Infinity;
+  for (const rect of free) {
+    if (pw<=rect.w && pl<=rect.h) {
+      const score = algo==='waste' ? rect.w*rect.h-pw*pl : (rect.w-pw)+(rect.h-pl);
+      if (score<bestScore) { bestScore=score; best={rect,rotated:false}; }
+    }
+    if (pl<=rect.w && pw<=rect.h) {
+      const score = algo==='waste' ? rect.w*rect.h-pl*pw : (rect.w-pl)+(rect.h-pw);
+      if (score<bestScore) { bestScore=score; best={rect,rotated:true}; }
+    }
+  }
+  return best;
+}
+
+function splitRect(free, used, pw, ph) {
+  const newRects = [];
+  for (const rect of free) {
+    // Right
+    const rx = used.x+pw, rw = rect.x+rect.w-rx;
+    if (rw>1) newRects.push({x:rx, y:rect.y, w:rw, h:rect.h});
+    // Left
+    const lw = used.x-rect.x;
+    if (lw>1) newRects.push({x:rect.x, y:rect.y, w:lw, h:rect.h});
+    // Bottom
+    const by = used.y+ph, bh = rect.y+rect.h-by;
+    if (bh>1) newRects.push({x:rect.x, y:by, w:rect.w, h:bh});
+    // Top
+    const th = used.y-rect.y;
+    if (th>1) newRects.push({x:rect.x, y:rect.y, w:rect.w, h:th});
+  }
+  free.length = 0;
+  // Deduplicate and keep non-dominated
+  for (const r of newRects) {
+    if (r.w>1 && r.h>1) {
+      let dominated = false;
+      for (const o of newRects) {
+        if (o!==r && o.x<=r.x && o.y<=r.y && o.x+o.w>=r.x+r.w && o.y+o.h>=r.y+r.h) {
+          dominated=true; break;
+        }
+      }
+      if (!dominated) free.push(r);
+    }
+  }
+}
+
+function formatArea(n) {
+  if (state.unit==='mm') return Math.round(n)+' mm²';
+  if (state.unit==='cm') return (n/100).toFixed(1)+' cm²';
+  if (state.unit==='m')  return (n/1e6).toFixed(4)+' m²';
+  if (state.unit==='in') return (n/645.16).toFixed(2)+' in²';
+  return n;
+}
+
+// ─── SHEET TABS ───────────────────────────────────────────────────
+function renderSheetTabs() {
+  const tabs = document.getElementById('sheetTabs');
+  tabs.style.display = 'flex';
+  tabs.innerHTML = '';
+  state.results.forEach((_,i) => {
+    const btn = document.createElement('button');
+    btn.className = 'sheet-tab'+(i===state.currentSheet?' active':'');
+    btn.textContent = `Sheet ${i+1}`;
+    btn.onclick = () => { state.currentSheet=i; renderSheetTabs(); renderSVG(); };
+    tabs.appendChild(btn);
+  });
+}
+
+// ─── SVG RENDER ───────────────────────────────────────────────────
+function renderSVG() {
+  if (!state.results||!state.results.length) return;
+  const sheet = state.results[state.currentSheet];
+  if (!sheet) return;
+
+  requestAnimationFrame(() => {
+    const svg = document.getElementById('cutSvg');
+    const wrap = document.getElementById('canvasWrap');
+    const MARGIN = 36;
+    const availW = wrap.clientWidth - MARGIN*2;
+    const availH = Math.max(200, wrap.clientHeight - MARGIN*2);
+
+    let sheetW = sheet.W, sheetH = sheet.L;
+    if (state.rotated) { [sheetW,sheetH]=[sheetH,sheetW]; }
+
+    const scaleX = availW/sheetW;
+    const scaleY = availH/sheetH;
+    const s = Math.min(scaleX, scaleY) * state.scale;
+
+    const svgW = sheetW*s + MARGIN*2;
+    const svgH = sheetH*s + MARGIN*2;
+
+    svg.setAttribute('width', svgW);
+    svg.setAttribute('height', svgH);
+    svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+
+    let html = `<defs><pattern id="hatch" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#CCCCCC" stroke-width="0.8"/>
+    </pattern></defs>`;
+
+    // Sheet bg
+    html += `<rect x="${MARGIN}" y="${MARGIN}" width="${sheetW*s}" height="${sheetH*s}" fill="#ffffff" stroke="#CCCCCC" stroke-width="1.5" rx="2"/>`;
+    html += `<rect x="${MARGIN}" y="${MARGIN}" width="${sheetW*s}" height="${sheetH*s}" fill="url(#hatch)" opacity="0.6"/>`;
+
+    // Sheet label
+    const unitLabel = state.unit==='in'?'"':state.unit;
+    html += `<text x="${MARGIN}" y="${MARGIN-10}" font-family="DM Mono,monospace" font-size="11" fill="#888888">${sheet.W} × ${sheet.L} ${unitLabel}</text>`;
+
+    // Placements
+    for (const p of sheet.placements) {
+      let px=p.x, py=p.y, pw=p.w, ph=p.h;
+      if (state.rotated) { [px,py]=[py,px]; [pw,ph]=[ph,pw]; }
+
+      const rx = MARGIN + px*s;
+      const ry = MARGIN + py*s;
+      const rw = pw*s;
+      const rh = ph*s;
+      const cx = rx+rw/2;
+      const cy = ry+rh/2;
+
+      const fill = state.colorMode ? p.color : '#DDDDDD';
+      const textColor = state.colorMode ? '#111111' : '#333333';
+      const opacity = state.colorMode ? '0.85' : '1';
+
+      html += `<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${fill}" opacity="${opacity}" stroke="#ffffff" stroke-width="1.5" rx="2"/>`;
+
+      if (state.showMeasure && rw>28 && rh>14) {
+        const lbl = `${p.origL}×${p.origW}${p.rotated?' ↻':''}`;
+        const fs = Math.min(state.fontSize, rw/Math.max(lbl.length,1)*1.5, rh*0.42);
+        if (fs>6) {
+          html += `<text x="${cx}" y="${cy+fs*0.38}" font-family="DM Mono,monospace" font-size="${fs.toFixed(1)}" fill="${textColor}" text-anchor="middle" font-weight="500">${lbl}</text>`;
+        }
+      }
+    }
+
+    svg.innerHTML = html;
+  });
+}
+
+// ─── TOOLBAR ──────────────────────────────────────────────────────
+function zoom(factor, mode) {
+  if (mode==='fit') state.scale=1;
+  else state.scale = Math.min(8, Math.max(0.15, state.scale*factor));
+  renderSVG();
+}
+function toggleRotate() {
+  state.rotated = !state.rotated;
+  document.getElementById('rotateBtn').classList.toggle('active', state.rotated);
+  renderSVG();
+}
+function changeFontSize(delta) {
+  state.fontSize = Math.max(7, Math.min(28, state.fontSize+delta));
+  renderSVG();
+}
+function toggleColor() {
+  state.colorMode = !state.colorMode;
+  document.getElementById('colorBtn').classList.toggle('active', state.colorMode);
+  renderSVG();
+}
+function toggleMeasurements() {
+  state.showMeasure = !state.showMeasure;
+  document.getElementById('measureBtn').classList.toggle('active', state.showMeasure);
+  renderSVG();
+}
+
+// ─── EXPORT ───────────────────────────────────────────────────────
+function exportSVGtoPNG() {
+  const svg = document.getElementById('cutSvg');
+  const data = new XMLSerializer().serializeToString(svg);
+  const canvas = document.createElement('canvas');
+  canvas.width = svg.clientWidth*2; canvas.height = svg.clientHeight*2;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2,2);
+  const img = new Image();
+  img.onload = () => {
+    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(img,0,0);
+    const a = document.createElement('a');
+    a.download='cut-plan.png'; a.href=canvas.toDataURL('image/png'); a.click();
+  };
+  img.src = 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(data);
+  toast('Exporting PNG…');
+}
+function exportPDF() {
+  const svg = document.getElementById('cutSvg');
+  const data = new XMLSerializer().serializeToString(svg);
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Cut Plan</title>
+    <style>body{margin:0;background:#fff;display:flex;justify-content:center;padding:20px;}
+    @media print{body{padding:0;}}</style></head>
+    <body>${data}<script>window.onload=()=>window.print()<\/script></body></html>`);
+  win.document.close();
+  toast('Opening print dialog…');
+}
+
+// ─── SAVE / LOAD ──────────────────────────────────────────────────
+function saveProject() {
+  const data = JSON.stringify({panels:state.panels, stocks:state.stocks, unit:state.unit, kerf:state.kerf});
+  const a = document.createElement('a');
+  a.download='cut-project.json';
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(data);
+  a.click();
+  toast('Project saved!'); closeModal('menuModal');
+}
+function loadProject() { document.getElementById('fileInput').click(); closeModal('menuModal'); }
+function handleFileLoad(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      state.panels = data.panels||state.panels;
+      state.stocks = data.stocks||state.stocks;
+      state.unit = data.unit||'mm';
+      state.kerf = data.kerf||3;
+      renderTable('panels'); renderTable('stocks');
+      toast('Project loaded!');
+    } catch { toast('Invalid file.'); }
+  };
+  reader.readAsText(file);
+}
+function newProject() {
+  closeModal('menuModal');
+  if (!confirm('Start a new project? Unsaved changes will be lost.')) return;
+  state.panels=[{l:'',w:'',qty:1}]; state.stocks=[{l:'',w:'',qty:1}]; state.results=null;
+  renderTable('panels'); renderTable('stocks');
+  document.getElementById('emptyState').style.display='flex';
+  document.getElementById('canvasInner').style.display='none';
+  document.getElementById('sheetTabs').style.display='none';
+  document.getElementById('statsRow').style.display='none';
+  toast('New project started.');
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2800);
+}
+
+window.addEventListener('resize', () => { if(state.results) renderSVG(); });
+</script>
+</body>
+</html>
