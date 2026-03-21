@@ -617,31 +617,22 @@ function bestFit(free, pl, pw, kerf, algo) {
 function splitRect(free, used, pw, ph) {
   const newRects = [];
   for (const rect of free) {
-    // Right
-    const rx = used.x+pw, rw = rect.x+rect.w-rx;
-    if (rw>1) newRects.push({x:rx, y:rect.y, w:rw, h:rect.h});
-    // Left
-    const lw = used.x-rect.x;
-    if (lw>1) newRects.push({x:rect.x, y:rect.y, w:lw, h:rect.h});
-    // Bottom
-    const by = used.y+ph, bh = rect.y+rect.h-by;
-    if (bh>1) newRects.push({x:rect.x, y:by, w:rect.w, h:bh});
-    // Top
-    const th = used.y-rect.y;
-    if (th>1) newRects.push({x:rect.x, y:rect.y, w:rect.w, h:th});
+    // Only process rects that overlap with the used area
+    const overlaps = used.x < rect.x+rect.w && used.x+pw > rect.x &&
+                     used.y < rect.y+rect.h && used.y+ph > rect.y;
+    if (!overlaps) { newRects.push(rect); continue; }
+    // Right remainder
+    if (used.x+pw < rect.x+rect.w) {
+      newRects.push({x:used.x+pw, y:rect.y, w:rect.x+rect.w-(used.x+pw), h:rect.h});
+    }
+    // Bottom remainder
+    if (used.y+ph < rect.y+rect.h) {
+      newRects.push({x:rect.x, y:used.y+ph, w:rect.w, h:rect.y+rect.h-(used.y+ph)});
+    }
   }
   free.length = 0;
-  // Deduplicate and keep non-dominated
   for (const r of newRects) {
-    if (r.w>1 && r.h>1) {
-      let dominated = false;
-      for (const o of newRects) {
-        if (o!==r && o.x<=r.x && o.y<=r.y && o.x+o.w>=r.x+r.w && o.y+o.h>=r.y+r.h) {
-          dominated=true; break;
-        }
-      }
-      if (!dominated) free.push(r);
-    }
+    if (r.w > 0.5 && r.h > 0.5) free.push(r);
   }
 }
 
