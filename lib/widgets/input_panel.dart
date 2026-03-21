@@ -224,10 +224,16 @@ class _OptimizeSection extends StatelessWidget {
       SizedBox(width: double.infinity, child: ElevatedButton(
         onPressed: state.isOptimizing ? null : state.optimize,
         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF111111), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), elevation: 0),
+
+        
         child: state.isOptimizing
           ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-          : const Text('▶  OPTIMIZE CUTS', style: TextStyle(fontFamily: 'monospace', fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1)),
-      )),
+          : const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Icon(Icons.content_cut, size: 18, color: Colors.white),
+              SizedBox(width: 8),
+              Text('OPTIMIZE CUTS', style: TextStyle(fontFamily: 'monospace', fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1)),
+            )), 
+        )),
     ]));
   }
 }
