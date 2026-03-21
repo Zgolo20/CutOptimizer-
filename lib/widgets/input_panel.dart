@@ -214,27 +214,37 @@ class _OptimizeSection extends StatelessWidget {
   const _OptimizeSection({required this.state});
   @override
   Widget build(BuildContext context) {
-    return Padding(padding: const EdgeInsets.all(16), child: Column(children: [
-      Row(children: [
-        Expanded(child: _AlgoButton(label: '◈  Least Waste', active: state.settings.algo == OptimizeAlgo.leastWaste, onTap: () => state.updateSettings(state.settings.copyWith(algo: OptimizeAlgo.leastWaste)))),
-        const SizedBox(width: 8),
-        Expanded(child: _AlgoButton(label: '✂  Least Cuts', active: state.settings.algo == OptimizeAlgo.leastCuts, onTap: () => state.updateSettings(state.settings.copyWith(algo: OptimizeAlgo.leastCuts)))),
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(children: [
+        Row(children: [
+          Expanded(child: _AlgoButton(label: '◈  Least Waste', active: state.settings.algo == OptimizeAlgo.leastWaste, onTap: () => state.updateSettings(state.settings.copyWith(algo: OptimizeAlgo.leastWaste)))),
+          const SizedBox(width: 8),
+          Expanded(child: _AlgoButton(label: '✂  Least Cuts', active: state.settings.algo == OptimizeAlgo.leastCuts, onTap: () => state.updateSettings(state.settings.copyWith(algo: OptimizeAlgo.leastCuts)))),
+        ]),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: state.isOptimizing ? null : state.optimize,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF111111),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              elevation: 0,
+            ),
+            child: state.isOptimizing
+              ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
+                  Icon(Icons.content_cut, size: 18, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('OPTIMIZE CUTS', style: TextStyle(fontFamily: 'monospace', fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1)),
+                ]),
+          ),
+        ),
       ]),
-      const SizedBox(height: 10),
-      SizedBox(width: double.infinity, child: ElevatedButton(
-        onPressed: state.isOptimizing ? null : state.optimize,
-        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF111111), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), elevation: 0),
-
-        
-        child: state.isOptimizing
-          ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-          : Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
-              Icon(Icons.content_cut, size: 18, color: Colors.white),
-              SizedBox(width: 8),
-              Text('OPTIMIZE CUTS', style: TextStyle(fontFamily: 'monospace', fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1)),
-            )), 
-        )),
-    ]));
+    );
   }
 }
 
